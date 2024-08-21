@@ -23,6 +23,8 @@ app.use('/', express.static(path.join(__dirname, 'public')));
 app.use('/', require('./routes/root'))
 
 
+app.use('/users',require('./routes/users'))
+
 // '*' = Define a route handler that matches all HTTP methods (GET, POST, PUT, DELETE, etc.)
 app.all('*', (req, res) => {
     res.status(404)
