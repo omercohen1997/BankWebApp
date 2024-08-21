@@ -1,2 +1,4 @@
 node_modules
-web_banking_application.pdf
+*.pdf
+logs
+.env
