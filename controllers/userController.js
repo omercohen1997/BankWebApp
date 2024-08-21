@@ -23,6 +23,18 @@ const signUp = async (req, res) => {
         return res.status(400).json({ message: 'All fields are required' });
     }
 
+    const emailRegex = /.+\@.+\..+/;
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: 'Invalid email format' });
+    }
+
+    const phoneNumberRegex = /^(\d{3}-?\d{3}-?\d{4})$/;
+    // Validate phone number format
+    if (!phoneNumberRegex.test(phoneNumber)) {
+        return res.status(400).json({ message: 'Invalid phone number format' });
+    }
+
+
     // Check if the user already exists
     const duplicate = await User.findOne({ email }).lean().exec();
 
