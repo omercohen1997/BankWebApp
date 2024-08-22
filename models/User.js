@@ -25,7 +25,15 @@ const userSchema = new Schema({
     type: Number,
     required: true,
     default: 0
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  verificationCode: {
+    type: String,
   }
+
 }, {
   timestamps: true
 });
