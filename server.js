@@ -14,16 +14,17 @@ console.log(process.env.NODE_ENV);
 
 connectDB()
 
+app.use(logger)
 app.use(express.json())
-app.use(logger) 
 app.use(cookieParser())
 // Tell to express where to find static files like css file or images that we would use .
 app.use('/', express.static(path.join(__dirname, 'public')));
+
+
 // This also would work :  app.use(express.static(public')) ;
 app.use('/', require('./routes/root'))
-
-
-app.use('/users',require('./routes/users'))
+app.use('/auth', require('./routes/auth'))
+app.use('/users', require('./routes/users'))
 
 // '*' = Define a route handler that matches all HTTP methods (GET, POST, PUT, DELETE, etc.)
 app.all('*', (req, res) => {
