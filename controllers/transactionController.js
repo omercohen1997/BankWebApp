@@ -1,65 +1,84 @@
 const Transaction = require('../models/Transaction')
 const User = require('../models/User')
+const asyncHandler = require('express-async-handler')
 
 
-/*
+const sendMoney = asyncHandler(async (req, res) => {
+    const { receiverEmail, amount } = req.body
+    const sender = req.user
 
-const performTransaction = async (req, res) => {
-    const { senderEmail, receiverEmail, amount } = req.body;
-
-    // Validate request parameters
-    if (!senderEmail || !receiverEmail || !amount) {
-        return res.status(400).json({ message: 'Sender email, receiver email, and amount are required' });
+    if (!receiverEmail || amount === undefined) {
+        return res.status(400).json({ message: 'Receiver email and amount are required' })
     }
 
     if (amount <= 0) {
-        return res.status(400).json({ message: 'Amount must be greater than zero' });
+        return res.status(400).json({ message: 'Amount must be greater than zero' })
     }
 
-    try {
-        // Find sender and receiver
-        const sender = await User.findOne({ email: senderEmail }).exec();
-        const receiver = await User.findOne({ email: receiverEmail }).exec();
+    const receiver = await User.findOne({ email: receiverEmail }).exec()
 
-        if (!sender) {
-            return res.status(404).json({ message: 'Sender not found' });
-        }
-
-        if (!receiver) {
-            return res.status(404).json({ message: 'Receiver not found' });
-        }
-
-        // Check if the sender has enough balance
-        if (sender.balance < amount) {
-            return res.status(400).json({ message: 'Insufficient balance' });
-        }
-
-        // Create and store transactions for sender and receiver
-        const transactionForSender = new Transaction({
-            senderEmail,
-            receiverEmail,
-            amount: -amount // Negative amount for sender
-        });
-
-        const transactionForReceiver = new Transaction({
-            senderEmail,
-            receiverEmail,
-            amount: amount // Positive amount for receiver
-        });
-
-        await transactionForSender.save();
-        await transactionForReceiver.save();
-
-        // Update balances
-        sender.balance -= amount;
-        receiver.balance += amount;
-
-        await sender.save();
-        await receiver.save();
-
-        res.status(200).json({ message: 'Transaction completed successfully' });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    if (!receiver) {
+        return res.status(404).json({ message: 'Receiver email does not exist' })
     }
-};
-*/
+
+    if (sender.balance < amount) {
+        return res.status(400).json({ message: 'You dont have enough money to make the transaction' })
+    }
+
+    // Update the sender's balance
+    sender.balance -= amount
+    await sender.save()
+
+    // Update the receiver's balance
+    receiver.balance += amount
+    await receiver.save()
+
+    /*
+    const senderTransaction = new Transaction({
+        senderEmail: sender.email,
+        receiverEmail,
+        amount: -amount,
+    });
+    await senderTransaction.save()
+    */
+    const receiverTransaction = new Transaction({
+        senderEmail: sender.email,
+        receiverEmail,
+        amount: amount,
+    });
+    await receiverTransaction.save()
+
+    res.status(200).json({ message: 'Transaction completed successfully' })
+})
+
+
+const getUserTransactions = asyncHandler(async (req, res) => {
+    const user = req.user
+    if (!user) {
+        return res.status(401).json({ message: 'Unauthorized' })
+    }
+
+    const userEmail = user.email;
+
+    // Find all transactions where the user is either the sender or the receiver
+    const transactions = await Transaction.find({
+        $or: [
+            { senderEmail: userEmail },
+            { receiverEmail: userEmail }
+        ]
+    }).exec()
+
+    if (transactions.length === 0) {
+        return res.status(404).json({ message: 'No transactions found for this user' })
+    }
+
+    res.status(200).json({ transactions })
+})
+
+
+
+
+module.exports = {
+    sendMoney,
+    getUserTransactions
+}

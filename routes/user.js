@@ -11,8 +11,6 @@ router.route('/')
     .post(usersController.signUp)
 */
 
-//router.get('/',verifyJWT, usersController.getAllUsers)
-//router.delete('/:id',verifyJWT, usersController.deleteUser)
 router.get('/balance', verifyJWT, usersController.getBalance)
 router.put('/change-password', verifyJWT, usersController.changePassword);
 

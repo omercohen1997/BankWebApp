@@ -17,7 +17,7 @@ const login = async (req, res) => {
         const user = await User.findOne({ email }).exec()
         //TODO: Should i check if the user is verfied?
         if (!user || !(await bcrypt.compare(password, user.password))) {
-            return res.status(401).json({ message: 'Unauthorized' })
+            return res.status(401).json({ message: 'Invalid email or password' })
         }
 
         // Creating the access token with the following info: 
