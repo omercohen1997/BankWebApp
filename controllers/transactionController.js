@@ -11,6 +11,10 @@ const sendMoney = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: 'Receiver email and amount are required' })
     }
 
+    if (receiverEmail ===  sender.email) {
+        return res.status(400).json({ message: 'Receiver email need to be different from the sender email' })
+    }
+
     if (amount <= 0) {
         return res.status(400).json({ message: 'Amount must be greater than zero' })
     }
