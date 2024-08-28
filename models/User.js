@@ -32,6 +32,10 @@ const userSchema = new Schema({
   },
   verificationCode: {
     type: String,
+  },
+  
+  verificationCodeExpiresAt: {
+    type: Date,
   }
 
 }, {

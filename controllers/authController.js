@@ -104,13 +104,16 @@ const signup = async (req, res) => {
 
         // Create and store the new user
         const hashedPassword = await bcrypt.hash(password, 10);
+        const verificationCodeExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
         const newUser = await User.create({
             password: hashedPassword,
             phoneNumber,
             email,
             balance,
             verificationCode,
-            isVerified: false
+            isVerified: false,
+            verificationCodeExpiresAt
         });
 
         // Send the verification code to the user's email
@@ -124,35 +127,46 @@ const signup = async (req, res) => {
 }
 
 
-// Verify user email
 const verifyEmail = async (req, res) => {
     const { email, code } = req.body;
 
     if (!email || !code) {
         return res.status(400).json({ message: 'Email and passcode are required' });
     }
-    
-    // Find the user by email
-    const user = await User.findOne({ email }).exec();
 
-    if (!user) {
-        return res.status(404).json({ message: 'User not found' });
+    try {
+        const user = await User.findOne({ email }).exec();
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        console.log('User Code from db:', user.verificationCode);
+
+        // Incase the user try again to verify himself
+        if (user.isVerified) {
+            return res.status(400).json({ message: 'User is already verified' });
+        }
+
+        if (user.verificationCodeExpiresAt < Date.now()) {
+            return res.status(400).json({ message: 'Verification code expired' });
+        }
+
+        if (user.verificationCode !== code) {
+            return res.status(400).json({ message: 'Invalid verification code' });
+        }
+
+        
+        user.isVerified = true;
+        user.verificationCode = null; 
+        user.verificationCodeExpiresAt = null;
+        await user.save();
+
+        res.status(200).json({ message: 'Email verified successfully' });
+    } catch (error) {
+        console.error('Error verifying email:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
-
-    console.log('User Code from db:', user.verificationCode )
-
-    // Check if the verification code matches
-    if (user.verificationCode !== code) {
-        return res.status(400).json({ message: 'Invalid verification code' });
-    }
-
-    // Update the user's isVerified status
-    //TODO: Delete  user.verificationCode from database
-    user.isVerified = true;
-    user.verificationCode = null; // Clear the verification code
-    await user.save();
-
-    res.status(200).json({ message: 'Email verified successfully' });
 };
 
 
