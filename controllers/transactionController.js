@@ -79,10 +79,36 @@ const getUserTransactions = asyncHandler(async (req, res) => {
     res.status(200).json({ transactions })
 })
 
+// Get all transactions (admin/manager)
+const getAllTransactions = asyncHandler(async (req, res) => {
+    const transactions = await Transaction.find().exec()
+    if (transactions.length === 0) {
+        return res.status(404).json({ message: 'No transactions found' })
+    }
+    res.status(200).json({ transactions })
+})
 
+// Get transactions by user ID (admin/manager)
+const getTransactionsByUserId = asyncHandler(async (req, res) => {
+    const { id } = req.params
+    const transactions = await Transaction.find({
+        $or: [
+            { senderEmail: id },
+            { receiverEmail: id }
+        ]
+    }).exec();
+
+    if (transactions.length === 0) {
+        return res.status(404).json({ message: 'No transactions found for this user' })
+    }
+
+    res.status(200).json({ transactions })
+});
 
 
 module.exports = {
     sendMoney,
-    getUserTransactions
+    getUserTransactions,
+    getAllTransactions,
+    getTransactionsByUserId
 }

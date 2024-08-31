@@ -22,10 +22,10 @@ app.use('/', express.static(path.join(__dirname, 'public')));
 
 
 // This also would work :  app.use(express.static(public')) ;
-app.use('/', require('./routes/root'))
-app.use('/auth', require('./routes/auth'))
-app.use('/users', require('./routes/user'))
-app.use('/transactions', require('./routes/transaction'))
+app.use('/', require('./routes/rootRoutes'))
+app.use('/auth', require('./routes/authRoutes'))
+app.use('/users', require('./routes/userManagementRoutes'))
+app.use('/transactions', require('./routes/transactionRoute'))
 
 
 // '*' = Define a route handler that matches all HTTP methods (GET, POST, PUT, DELETE, etc.)

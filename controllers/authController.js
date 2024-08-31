@@ -15,6 +15,7 @@ const login = async (req, res) => {
         }
 
         const user = await User.findOne({ email }).exec()
+        
         //TODO: Should i check if the user is verfied?
         if (!user || !(await bcrypt.compare(password, user.password))) {
             return res.status(401).json({ message: 'Invalid email or password' })
@@ -25,7 +26,7 @@ const login = async (req, res) => {
             {
                 "UserInfo": {
                     "email": user.email,
-                    // "roles": admin --> This will be added in the future
+                    "role": user.role
                 }
             },
             process.env.JWT_ACCESS_TOKEN,
@@ -67,7 +68,7 @@ const logout = (req, res) => {
 const signup = async (req, res) => {
     const { password, phoneNumber, email, balance } = req.body;
 
-    // Check if all required fields are provided
+    
     if (!password || !phoneNumber || !email) {
         return res.status(400).json({ message: 'All fields are required' });
     }
@@ -77,7 +78,6 @@ const signup = async (req, res) => {
           return res.status(400).json({ message: 'Invalid email format' });
       } */
 
-    // Validate email format using email-validator
     if (!emailValidator.validate(email)) {
         return res.status(400).json({ message: 'Invalid email format' });
     }
@@ -90,7 +90,6 @@ const signup = async (req, res) => {
     }
 
 
-    // Check if the user already exists
     const duplicate = await User.findOne({ email }).lean().exec();
 
     if (duplicate) {
@@ -114,15 +113,15 @@ const signup = async (req, res) => {
             verificationCode,
             isVerified: false,
             verificationCodeExpiresAt
-        });
+        })
 
         // Send the verification code to the user's email
         await sendVerificationCode(email, verificationCode);
 
-        res.status(201).json({ message: `User with email ${email} created successfully` });
+        res.status(201).json({ message: `User with email ${email} created successfully` })
         //res.status(201).json(newUser);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: error.message })
     }
 }
 
@@ -156,9 +155,9 @@ const verifyEmail = async (req, res) => {
             return res.status(400).json({ message: 'Invalid verification code' });
         }
 
-        
+
         user.isVerified = true;
-        user.verificationCode = null; 
+        user.verificationCode = null;
         user.verificationCodeExpiresAt = null;
         await user.save();
 
@@ -167,7 +166,54 @@ const verifyEmail = async (req, res) => {
         console.error('Error verifying email:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
-};
+}
+
+
+const signupAdmin = async (req, res) => {
+    const { email, password, phoneNumber, adminSpecialKey } = req.body
+
+    if (!email || !password || !phoneNumber || !adminSpecialKey) {
+        return res.status(400).json({ message: 'All fields are required' })
+    }
+
+    if (!emailValidator.validate(email)) {
+        return res.status(400).json({ message: 'Invalid email format' });
+    }
+
+    const phoneNumberRegex = /^(\d{3}-?\d{3}-?\d{4})$/;
+    if (!phoneNumberRegex.test(phoneNumber)) {
+        return res.status(400).json({ message: 'Invalid phone number format' });
+    }
+
+    if (adminSpecialKey !== process.env.ADMIN_SIGNUP_KEY) {
+        return res.status(403).json({ message: 'Invalid special key' })
+    }
+
+
+    try {
+        const duplicate = await User.findOne({ email }).lean().exec()
+        if (duplicate) {
+            return res.status(409).json({ message: 'Email already exists' })
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10)
+        const newAdmin = await User.create({
+            email,
+            password: hashedPassword,
+            phoneNumber,
+            balance: 1000,
+            isVerified: true,
+            role: 'admin'
+        })
+
+        res.status(201).json({ message: `Admin user ${email} created successfully` })
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+
+
 
 
 
@@ -175,5 +221,6 @@ module.exports = {
     signup,
     login,
     logout,
+    signupAdmin,
     verifyEmail
 }
