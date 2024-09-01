@@ -4,13 +4,7 @@ const usersController = require('../controllers/userController')
 const verifyJWT = require('../middleware/verifyToken')
 const checkRole = require('../middleware/checkRole');
 
-//router.use(verifyJWT)
 
-/*
-router.route('/')
-    .get(usersController.getAllUsers)
-    .post(usersController.signUp)
-*/
 
 // logged-in user  TODO:(Should the admin/manager count also as a noraml user?)
 router.put('/change-password', verifyJWT, checkRole('user','admin','manager'), usersController.changePassword)

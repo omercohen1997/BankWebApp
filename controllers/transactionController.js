@@ -29,11 +29,9 @@ const sendMoney = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: 'You dont have enough money to make the transaction' })
     }
 
-    // Update the sender's balance
     sender.balance -= amount
     await sender.save()
 
-    // Update the receiver's balance
     receiver.balance += amount
     await receiver.save()
 

@@ -12,7 +12,7 @@ router.post('/send', verifyJWT, checkRole('user','admin','manager'), transaction
 
 
 router.get('/all-transactions', verifyJWT,checkRole('admin','manager'), transactionController.getAllTransactions)
-router.get('/user/:id', verifyJWT, verifyJWT,checkRole('admin','manager'), transactionController.getTransactionsByUserId)
+router.get('/user/:id', verifyJWT,checkRole('admin','manager'), transactionController.getTransactionsByUserId)
 
 
 
