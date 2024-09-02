@@ -1,7 +1,7 @@
 const Transaction = require('../models/Transaction')
 const User = require('../models/User')
 const asyncHandler = require('express-async-handler')
-
+const mongoose = require('mongoose')
 
 const sendMoney = asyncHandler(async (req, res) => {
     const { receiverEmail, amount } = req.body
@@ -11,46 +11,53 @@ const sendMoney = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: 'Receiver email and amount are required' })
     }
 
-    if (receiverEmail ===  sender.email) {
-        return res.status(400).json({ message: 'Receiver email need to be different from the sender email' })
+    if (receiverEmail === sender.email) {
+        return res.status(400).json({ message: 'Receiver email needs to be different from the sender email' })
     }
 
     if (amount <= 0) {
         return res.status(400).json({ message: 'Amount must be greater than zero' })
     }
 
-    const receiver = await User.findOne({ email: receiverEmail }).exec()
+    const session = await mongoose.startSession()
 
-    if (!receiver) {
-        return res.status(404).json({ message: 'Receiver email does not exist' })
+    try {
+        await session.withTransaction(async () => {
+            const receiver = await User.findOne({ email: receiverEmail }).session(session)
+
+            if (!receiver) {
+                throw new Error('Receiver email does not exist')
+            }
+
+            if (sender.balance < amount) {
+                throw new Error('You dont have enough money to make the transaction')
+            }
+
+            sender.balance -= amount;
+            receiver.balance += amount;
+
+            await Promise.all([
+                sender.save({ session }),
+                receiver.save({ session }),
+               // receiver.save({ session }).then(() => { throw new Error('Simulated error during receiver save') }),
+
+                new Transaction({
+                    senderEmail: sender.email,
+                    receiverEmail,
+                    amount: amount,
+                }).save({ session })
+            ])
+        })
+
+        res.status(200).json({ message: 'Transaction completed successfully' })
+
+    } catch (error) {
+        console.error('Transaction error:', error)
+        res.status(400).json({ message: error.message })
+
+    } finally {
+        session.endSession()
     }
-
-    if (sender.balance < amount) {
-        return res.status(400).json({ message: 'You dont have enough money to make the transaction' })
-    }
-
-    sender.balance -= amount
-    await sender.save()
-
-    receiver.balance += amount
-    await receiver.save()
-
-    /*
-    const senderTransaction = new Transaction({
-        senderEmail: sender.email,
-        receiverEmail,
-        amount: -amount,
-    });
-    await senderTransaction.save()
-    */
-    const receiverTransaction = new Transaction({
-        senderEmail: sender.email,
-        receiverEmail,
-        amount: amount,
-    });
-    await receiverTransaction.save()
-
-    res.status(200).json({ message: 'Transaction completed successfully' })
 })
 
 
