@@ -7,12 +7,19 @@ const sendMoney = asyncHandler(async (req, res) => {
     const { receiverEmail, amount } = req.body
     const sender = req.user
 
+    // TODO: check if the input is a number (NaN)
+
+    
     if (!receiverEmail || amount === undefined) {
         return res.status(400).json({ message: 'Receiver email and amount are required' })
     }
 
     if (receiverEmail === sender.email) {
         return res.status(400).json({ message: 'Receiver email needs to be different from the sender email' })
+    }
+    
+    if (isNaN(amount)){
+        return res.status(400).json({message: 'The amount field must be a number'})
     }
 
     if (amount <= 0) {
@@ -33,8 +40,8 @@ const sendMoney = asyncHandler(async (req, res) => {
                 throw new Error('You dont have enough money to make the transaction')
             }
 
-            sender.balance -= amount;
-            receiver.balance += amount;
+            sender.balance -= amount
+            receiver.balance += amount
 
             await Promise.all([
                 sender.save({ session }),
@@ -67,9 +74,8 @@ const getUserTransactions = asyncHandler(async (req, res) => {
         return res.status(401).json({ message: 'Unauthorized' })
     }
 
-    const userEmail = user.email;
+    const userEmail = user.email
 
-    // Find all transactions where the user is either the sender or the receiver
     const transactions = await Transaction.find({
         $or: [
             { senderEmail: userEmail },
@@ -101,14 +107,14 @@ const getTransactionsByUserId = asyncHandler(async (req, res) => {
             { senderEmail: id },
             { receiverEmail: id }
         ]
-    }).exec();
+    }).exec()
 
     if (transactions.length === 0) {
         return res.status(404).json({ message: 'No transactions found for this user' })
     }
 
     res.status(200).json({ transactions })
-});
+})
 
 
 module.exports = {

@@ -15,7 +15,7 @@ const sendVerificationCode = async (email, code) => {
 
     // Email options
     const mailOptions = {
-        from: 'omerc1997@gmail.com',
+        from: process.env.EMAIL_USER,
         to: email,
         subject: 'Your Verification Code',
         text: `Your verification code is ${code}`

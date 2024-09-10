@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+const mongoose = require('mongoose')
+const { Schema } = mongoose
 
 const transactionSchema = new Schema({
     senderEmail: {
@@ -15,11 +15,9 @@ const transactionSchema = new Schema({
         required: true
     },
 
-    timestamp: {
-        type: Date,
-        default: Date.now
-    }
-});
+},{
+    timestamps: true
+})
 
 const Transaction = mongoose.model('Transaction', transactionSchema);
 
