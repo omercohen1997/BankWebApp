@@ -7,9 +7,6 @@ const sendMoney = asyncHandler(async (req, res) => {
     const { receiverEmail, amount } = req.body
     const sender = req.user
 
-    // TODO: check if the input is a number (NaN)
-
-    
     if (!receiverEmail || amount === undefined) {
         return res.status(400).json({ message: 'Receiver email and amount are required' })
     }

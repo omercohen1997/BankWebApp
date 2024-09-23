@@ -4,7 +4,7 @@ require('dotenv').config()
 
 // Function to send verification code
 const sendVerificationCode = async (email, code) => {
-    // Set up your nodemailer transporter
+    
     const transporter = nodemailer.createTransport({
         service: 'Gmail',
         auth: {

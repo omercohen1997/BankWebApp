@@ -9,12 +9,12 @@ const verifyJWT = async (req, res, next) => {
     try {
         // if token is stored header: Inside the req header authorization can be lower or capital case.
         const authHeader = req.headers.authorization || req.headers.Authorization
-        const tokenFromHeader = authHeader && authHeader.split(' ')[1];
+        const tokenFromHeader = authHeader && authHeader.split(' ')[1]
     
         // If token is stored in cookies
-        const cookieToken = req.cookies.jwt;
+        const cookieToken = req.cookies.jwt
     
-        const validToken = tokenFromHeader || cookieToken;
+        const validToken = tokenFromHeader || cookieToken
     
         if (!validToken){
             return res.status(401).json({ message: 'Unauthorized: No token provided' })

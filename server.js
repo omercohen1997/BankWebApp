@@ -10,7 +10,7 @@ const mongoose = require('mongoose')
 
 const PORT = process.env.PORT || 3500
 
-console.log(process.env.NODE_ENV);
+console.log(process.env.NODE_ENV)
 
 connectDB()
 
@@ -22,7 +22,7 @@ app.use(cookieParser()) // middleware to handle cookies for incoming requests, p
 app.use('/', express.static(path.join(__dirname, 'public')))
 
 
-// This also would work :  app.use(express.static(public')) ;
+// This also would work :  app.use(express.static(public')) 
 // TODO: Add api to the route
 app.use('/', require('./routes/rootRoutes'))
 app.use('/auth', require('./routes/authRoutes'))
@@ -60,6 +60,6 @@ mongoose.connection.once('open', () => {
 })
 
 mongoose.connection.on('error', err => {
-    console.log(err);
+    console.log(err)
     logEvents(`${err.no}: ${err.code}\t${err.syscall}\t${err.hostname}`, 'mongoErrLog.log')
 })

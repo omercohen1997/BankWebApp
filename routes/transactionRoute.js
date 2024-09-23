@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const transactionController = require('../controllers/transactionController')
 const verifyJWT = require('../middleware/verifyToken')
-const checkRole = require('../middleware/checkRole');
+const checkRole = require('../middleware/checkRole')
 
 
 
