@@ -8,12 +8,15 @@ const Signup = () => {
 
     const [email, setEmail] = useState('');
     const [validEmail, setValidEmail] = useState(false);
-    const [emailTouched, setEmailTouched] = useState(false);
+    const [emailFocus, setEmailFocus] = useState(false);
 
     const [password, setPassword] = useState('');
+    
+
     const [phoneNumber, setPhoneNumber] = useState('');
 
     const [message, setMessage] = useState('');
+
     const [verificationCode, setVerificationCode] = useState('');
     const [showVerification, setShowVerification] = useState(false);
 
@@ -31,27 +34,33 @@ const Signup = () => {
         setMessage('');
 
         if (!validEmail) {
-            setMessage('Please enter a valid email address.');
+            setMessage('Please enter a valid email aewweWddress.');
             return;
         }
 
         try {
             await axios.post('/auth/signup', { email, password, phoneNumber });
-            setEmail('');
+            //setEmail(''); i cleared it after the vertification so i can just show the passcode textbox.
+            setPassword('');
+            setPhoneNumber('');
+            setVerificationCode(''); //TODO:redundant: the state will change only after the signup in setVerificationCode
             setMessage('Signup successful! Please check your email for the verification code.');
             setShowVerification(true);
+            
         } catch (error) {
-            setMessage(error.response?.data?.message || 'An error occurred');
+            setMessage(error.response?.data?.message);
         }
     };
 
     const handleVerification = async (e) => {
         e.preventDefault();
         setMessage('');
+        setEmail('');
 
         try {
             await axios.post('/auth/signup/verify-email', { email, code: verificationCode });
             setMessage('Email verified successfully!');
+            setVerificationCode('');
         } catch (error) {
             setMessage(error.response?.data?.message || 'An error occurred');
         }
@@ -70,12 +79,16 @@ const Signup = () => {
                             ref={emailRef}
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            onBlur={setEmailTouched} // same as: onBlur={() => setEmailTouched(true)}
-                            onFocus={() => setEmailTouched(false)}
+                            onBlur={setEmailFocus} // same as: onBlur={() => setEmailFocus(true)}
+                            onFocus={() => setEmailFocus(false)}
                             required
+                            placeholder="user@example.com"
+
                         />
-                        {emailTouched && email && !validEmail && (
-                            <p style={{ color: 'red' }}>Please enter a valid email address.</p>
+                        {emailFocus && email && !validEmail && (
+                            <p style={{ color: 'red', fontSize: '0.9em', fontWeight: 'normal', marginTop: '5px' }}>
+                                Please enter a valid email address.
+                            </p>
                         )}
                     </div>
                     <div>
