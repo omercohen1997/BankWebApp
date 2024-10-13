@@ -5,6 +5,9 @@ const jwt = require('jsonwebtoken')
 const emailValidator = require('email-validator')
 const { sendVerificationCode } = require('../services/emailServices')
 
+const phoneNumberRegex = /^05\d(-\d{7}|\d{7})$/
+const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/
+
 
 const signup = async (req, res) => {
     const { password, phoneNumber, email, balance } = req.body
@@ -14,17 +17,15 @@ const signup = async (req, res) => {
         return res.status(400).json({ message: 'All fields are required' })
     }
 
-    /*   const emailRegex = /.+\@.+\..+/
-      if (!emailRegex.test(email)) {
-          return res.status(400).json({ message: 'Invalid email format' })
-      } */
-
-    if (!emailValidator.validate(email)) {
+    if (!emailRegex.test(email)) {
         return res.status(400).json({ message: 'Invalid email format' })
     }
 
+    /*   if (!emailValidator.validate(email)) {
+          return res.status(400).json({ message: 'Invalid email format' })
+      }
+   */
 
-    const phoneNumberRegex = /^(\d{3}-?\d{3}-?\d{4})$/
     // Validate phone number format
     if (!phoneNumberRegex.test(phoneNumber)) {
         return res.status(400).json({ message: 'Invalid phone number format' })
@@ -119,7 +120,6 @@ const signupAdmin = async (req, res) => {
         return res.status(400).json({ message: 'Invalid email format' })
     }
 
-    const phoneNumberRegex = /^(\d{3}-?\d{3}-?\d{4})$/
     if (!phoneNumberRegex.test(phoneNumber)) {
         return res.status(400).json({ message: 'Invalid phone number format' })
     }
@@ -174,7 +174,7 @@ const login = async (req, res) => {
         }
 
         //TODO: Should i also check if the passcode expaired already (maybe sent a new one?)
-        if (!user.isVerified){
+        if (!user.isVerified) {
             return res.status(403).json({ message: 'User not verified. Please verify your email to log in.' })
         }
 
