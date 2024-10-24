@@ -201,7 +201,6 @@ const login = async (req, res) => {
         // Send accessToken 
         res.json({ accessToken })
     } catch (error) {
-        // Handle errors
         console.error(error)
         res.status(500).json({ message: 'Internal Server Error' })
     }

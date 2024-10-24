@@ -1,19 +1,23 @@
 require('dotenv').config();
 const express = require('express')
-const app = express()
 const path = require('path') // provides utilities for working with file and directory paths.
 const { logger, logEvents } = require('./middleware/logger')
 const errorHandler = require('./middleware/errorHandler')
 const cookieParser = require('cookie-parser')
 const connectDB = require('./config/dbConnect')
 const mongoose = require('mongoose')
+const cors = require('cors')
+const corsOptions = require('./config/corsOptions')
+
 
 const PORT = process.env.PORT || 3500
 
 console.log(process.env.NODE_ENV)
 
+const app = express()
 connectDB()
 
+app.use(cors(corsOptions))
 app.use(logger)
 app.use(express.json())
 app.use(cookieParser()) // middleware to handle cookies for incoming requests, parse add the cookie to req.cookies

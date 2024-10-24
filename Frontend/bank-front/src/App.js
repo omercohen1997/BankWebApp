@@ -1,16 +1,17 @@
 import React from 'react';
+import { Routes, Route } from 'react-router-dom';
 import Signup from './components/Signup';
+import Login from './components/Login';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Bank App Signup</h1>
-      </header>
-      <main>
-        <Signup />
-      </main>
-    </div>
+
+    <Routes>
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<Login />} />
+    </Routes>
+
   );
 }
 

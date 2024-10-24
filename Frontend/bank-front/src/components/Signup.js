@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../api/axios'
 
 const EMAIL_REGEX = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{6,20}$/;
@@ -91,7 +91,13 @@ const Signup = () => {
             setShowVerification(true);
 
         } catch (error) {
-            setMessage(error.response?.data?.message);
+            if (!error?.response) {
+                setMessage('No Server Response');
+            } else if (error.response?.status === 409) {
+                setMessage('Username Taken');
+            } else {
+                setMessage('Registration Failed')
+            }
         } finally {
             setLoading(false);
         }
@@ -130,8 +136,6 @@ const Signup = () => {
                             onBlur={setEmailFocus} // same as: onBlur={() => setEmailFocus(true)}
                             onFocus={() => setEmailFocus(false)}
                             required
-                            placeholder="user@example.com"
-
                         />
                         {//TODO: reuse
                             emailFocus && email && !validEmail && (
@@ -150,7 +154,6 @@ const Signup = () => {
                             onBlur={setPasswordFocus}
                             onFocus={() => setPasswordFocus(false)}
                             required
-                            placeholder='Example1#'
                         />
                         {passwordFocus && password && !validPassword && (
                             <p style={{ color: 'red', fontSize: '0.9em', fontWeight: 'normal', marginTop: '5px' }}>
@@ -168,7 +171,6 @@ const Signup = () => {
                             onBlur={setConfirmPasswordFocus}
                             onFocus={() => setConfirmPasswordFocus(false)}
                             required
-                            placeholder='Confirm password'
                         />
                         {confirmPasswordFocus && confirmPassword && !validConfirmPassword && (
                             <p style={{ color: 'red', fontSize: '0.9em', fontWeight: 'normal', marginTop: '5px' }}>
@@ -186,7 +188,6 @@ const Signup = () => {
                             onBlur={setPhoneNumberFocus}
                             onFocus={() => setPhoneNumberFocus(false)}
                             required
-                            placeholder='05X-XXXXXXX / 05XXXXXXXX'
                         />
                         {phoneNumberFocus && phoneNumber && !validPhoneNumber && (
                             <p style={{ color: 'red', fontSize: '0.9em', fontWeight: 'normal', marginTop: '5px' }}>
