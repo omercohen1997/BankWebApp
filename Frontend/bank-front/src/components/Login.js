@@ -1,17 +1,19 @@
-// src/Login.js
-import React, { useEffect, useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useRef } from 'react';
+import React, { useEffect, useState, useContext, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { authContext } from '../context/AuthProvider';
-import axios from '../api/axios'
+import axios from '../api/axios';
+import {jwtDecode} from 'jwt-decode';
+import { Container, TextField, Button, Typography, Box, Alert } from '@mui/material';
+
 const Login = () => {
     const { setAuth } = useContext(authContext);
+    const navigate = useNavigate();
+    const location = useLocation();
+    const from = location.state?.from?.pathname || "/";
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
-
-    const navigate = useNavigate();
 
     const emailRef = useRef();
 
@@ -27,23 +29,23 @@ const Login = () => {
             return;
         }
 
-        console.log(email, password);
-
         try {
-
             const response = await axios.post('/auth/login', { email, password });
-
             const accessToken = response?.data?.accessToken;
-            //const roles = response?.data?.role;
-            //setAuth({email,roles,accessToken});
-            setAuth({ accessToken });
 
-            //localStorage.setItem('token', accessToken);
+            const decoded = jwtDecode(accessToken);
+            const role = decoded.UserInfo.role;
+
+            setAuth({ accessToken, email, role });
 
             setEmail('');
             setPassword('');
 
-            navigate('/dashboard');
+            if (from !== '/') {
+                navigate(from, { replace: true });
+            } else {
+                role === 'admin' ? navigate('/admin', { replace: true }) : navigate('/dashboard', { replace: true });
+            }
         } catch (err) {
             if (!err?.response) {
                 setErrorMessage('No Server Response');
@@ -51,6 +53,8 @@ const Login = () => {
                 setErrorMessage('Missing Username or Password');
             } else if (err.response?.status === 401) {
                 setErrorMessage('Wrong email or password.');
+            } else if (err.response?.status === 403) {
+                setErrorMessage('User is not verified');
             } else {
                 setErrorMessage('Login Failed');
             }
@@ -58,35 +62,58 @@ const Login = () => {
     };
 
     return (
-        <div>
-            <h2>Login</h2>
-            {errorMessage && <p> {errorMessage}</p>}
+        <Container maxWidth="xs" sx={{ mt: 8 }}>
+            <Typography 
+             variant="h4"
+             align="center"
+             gutterBottom
+             sx={{
+               fontWeight: 'bold',
+               color: 'primary.main',
+               letterSpacing: 1.5,
+               textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
+             }}
+           >
+                Login
+            </Typography>
+
+            {errorMessage && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                    {errorMessage}
+                </Alert>
+            )}
+
             <form onSubmit={handleSubmit}>
-                <div>
-                    <label htmlFor="email">Email</label>
-                    <input
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <TextField
+                        label="Email"
+                        variant="outlined"
+                        fullWidth
                         type="email"
                         id="email"
                         value={email}
-                        ref={emailRef}
+                        inputRef={emailRef}
                         onChange={(e) => setEmail(e.target.value)}
-                        autoComplete='off'
+                        autoComplete="off"
                         required
                     />
-                </div>
-                <div>
-                    <label htmlFor="password">Password</label>
-                    <input
+                    <TextField
+                        label="Password"
+                        variant="outlined"
+                        fullWidth
                         type="password"
                         id="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
                     />
-                </div>
-                <button type="submit">Login</button>
+
+                    <Button type="submit" variant="contained" color="primary" fullWidth>
+                        Login
+                    </Button>
+                </Box>
             </form>
-        </div>
+        </Container>
     );
 };
 

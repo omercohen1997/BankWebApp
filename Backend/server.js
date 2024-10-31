@@ -39,6 +39,7 @@ app.use('/transactions', require('./routes/transactionRoute'))
 */
 app.all('*', (req, res) => {
     res.status(404)
+    // TODO: Delete the html page i don thnik it is actually requierd
     if (req.accepts('html')) {
         res.sendFile(path.join(__dirname, 'views', '404.html'))
     } else if (req.accepts('json')) {
@@ -49,7 +50,7 @@ app.all('*', (req, res) => {
 })
 
 
-app.use(errorHandler)
+app.use(errorHandler) //  it will only execute when an error occurs in the application. 
 
 /* This event listener is triggered once the connection to the MongoDB database has successfully opened.
     * once method: registers a one-time listener for a specific event will be executed only once when the event is triggered.

@@ -87,7 +87,6 @@ const getUserTransactions = asyncHandler(async (req, res) => {
     res.status(200).json({ transactions })
 })
 
-// Get all transactions (admin/manager)
 const getAllTransactions = asyncHandler(async (req, res) => {
     const transactions = await Transaction.find().exec()
     if (transactions.length === 0) {
@@ -96,7 +95,6 @@ const getAllTransactions = asyncHandler(async (req, res) => {
     res.status(200).json({ transactions })
 })
 
-// Get transactions by user ID (admin/manager)
 const getTransactionsByUserId = asyncHandler(async (req, res) => {
     const { id } = req.params
     const transactions = await Transaction.find({

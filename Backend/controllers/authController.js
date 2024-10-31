@@ -41,7 +41,7 @@ const signup = async (req, res) => {
 
     try {
 
-        const verificationCode = crypto.randomBytes(3).toString('hex') // 6 random digits
+        const verificationCode = crypto.randomBytes(3).toString('hex') 
         const hashedPassword = await bcrypt.hash(password, 10)
         const verificationCodeExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
 
@@ -55,7 +55,6 @@ const signup = async (req, res) => {
             verificationCodeExpiresAt
         })
 
-        // Send the verification code to the user's email
         await sendVerificationCode(email, verificationCode)
 
         res.status(201).json({ message: `User with email ${email} created successfully` })
@@ -82,12 +81,12 @@ const verifyEmail = async (req, res) => {
 
         console.log('User Code from db:', user.verificationCode)
 
-        // Incase the user try again to verify himself
         if (user.isVerified) {
             return res.status(400).json({ message: 'User is already verified' })
         }
 
         if (user.verificationCodeExpiresAt < Date.now()) {
+            //TODO: add delete user if expire or another solution
             return res.status(400).json({ message: 'Verification code expired' })
         }
 
@@ -179,7 +178,6 @@ const login = async (req, res) => {
         }
 
 
-        // Creating the access token with the following info: 
         const accessToken = jwt.sign(
             {
                 "UserInfo": {
@@ -216,11 +214,6 @@ const logout = (req, res) => {
 
     res.json({ message: 'Logged out successfully' })
 }
-
-
-
-
-
 
 
 
