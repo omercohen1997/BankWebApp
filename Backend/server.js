@@ -1,6 +1,5 @@
 require('dotenv').config();
 const express = require('express')
-const path = require('path') // provides utilities for working with file and directory paths.
 const { logger, logEvents } = require('./middleware/logger')
 const errorHandler = require('./middleware/errorHandler')
 const cookieParser = require('cookie-parser')
@@ -8,6 +7,7 @@ const connectDB = require('./config/dbConnect')
 const mongoose = require('mongoose')
 const cors = require('cors')
 const corsOptions = require('./config/corsOptions')
+const verifyJWT = require('./middleware/verifyToken')
 
 
 const PORT = process.env.PORT || 3500
@@ -22,32 +22,16 @@ app.use(logger)
 app.use(express.json())
 app.use(cookieParser()) // middleware to handle cookies for incoming requests, parse add the cookie to req.cookies
 
-// Tell to express where to find static files like css file or images that we would use .
-app.use('/', express.static(path.join(__dirname, 'public')))
-
-
-// This also would work :  app.use(express.static(public')) 
 // TODO: Add api to the route
-app.use('/', require('./routes/rootRoutes'))
 app.use('/auth', require('./routes/authRoutes'))
-app.use('/users', require('./routes/userManagementRoutes'))
-app.use('/transactions', require('./routes/transactionRoute'))
+app.use('/users', verifyJWT,require('./routes/userManagementRoutes'))
+app.use('/transactions', verifyJWT, require('./routes/transactionRoute'))
 
 
-/* '*' = Define a route handler that matches all HTTP methods (GET, POST, PUT, DELETE, etc.)
-    that hasn't been matched by previous route handler. Meaning pages/routes that are not exsists
-*/
+
 app.all('*', (req, res) => {
-    res.status(404)
-    // TODO: Delete the html page i don thnik it is actually requierd
-    if (req.accepts('html')) {
-        res.sendFile(path.join(__dirname, 'views', '404.html'))
-    } else if (req.accepts('json')) {
-        res.json({ message: '404 Not Found' })
-    } else {
-        res.type('txt').send('404 Not Found')
-    }
-})
+    res.status(404).json({ message: '404 Not Found' });
+});
 
 
 app.use(errorHandler) //  it will only execute when an error occurs in the application. 

@@ -2,15 +2,11 @@ const User = require('../models/User')
 const bcrypt = require('bcrypt')
 const crypto = require('crypto')
 const jwt = require('jsonwebtoken')
-const emailValidator = require('email-validator')
 const { sendVerificationCode } = require('../services/emailServices')
-
-const phoneNumberRegex = /^05\d(-\d{7}|\d{7})$/
-const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/
-
+const { phoneNumberRegex, emailRegex } = require('../utils/validatePatterns')
 
 const signup = async (req, res) => {
-    const { password, phoneNumber, email, balance } = req.body
+    const { password, phoneNumber, email } = req.body
 
 
     if (!password || !phoneNumber || !email) {
@@ -21,44 +17,35 @@ const signup = async (req, res) => {
         return res.status(400).json({ message: 'Invalid email format' })
     }
 
-    /*   if (!emailValidator.validate(email)) {
-          return res.status(400).json({ message: 'Invalid email format' })
-      }
-   */
-
-    // Validate phone number format
     if (!phoneNumberRegex.test(phoneNumber)) {
         return res.status(400).json({ message: 'Invalid phone number format' })
     }
 
-
-    const duplicate = await User.findOne({ email }).lean().exec()
-
-    if (duplicate) {
-        return res.status(409).json({ message: 'User already exists the email should be unique' })
-    }
-
-
     try {
 
-        const verificationCode = crypto.randomBytes(3).toString('hex') 
+        const duplicate = await User.findOne({ email }).lean().exec()
+
+        if (duplicate) {
+            return res.status(409).json({ message: 'User already exists the email should be unique' })
+        }
+
+        const verificationCode = crypto.randomBytes(3).toString('hex')
         const hashedPassword = await bcrypt.hash(password, 10)
         const verificationCodeExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
 
-        const newUser = await User.create({
+        await User.create({
+            email,
             password: hashedPassword,
             phoneNumber,
-            email,
-            balance,
-            verificationCode,
+            balance: 2000,
             isVerified: false,
+            verificationCode,
             verificationCodeExpiresAt
         })
 
         await sendVerificationCode(email, verificationCode)
 
         res.status(201).json({ message: `User with email ${email} created successfully` })
-        //res.status(201).json(newUser)
     } catch (error) {
         res.status(500).json({ message: error.message })
     }
@@ -108,56 +95,6 @@ const verifyEmail = async (req, res) => {
 }
 
 
-const signupAdmin = async (req, res) => {
-    const { email, password, phoneNumber, adminSpecialKey } = req.body
-
-    if (!email || !password || !phoneNumber || !adminSpecialKey) {
-        return res.status(400).json({ message: 'All fields are required' })
-    }
-
-    if (!emailValidator.validate(email)) {
-        return res.status(400).json({ message: 'Invalid email format' })
-    }
-
-    if (!phoneNumberRegex.test(phoneNumber)) {
-        return res.status(400).json({ message: 'Invalid phone number format' })
-    }
-
-    if (adminSpecialKey !== process.env.ADMIN_SIGNUP_KEY) {
-        return res.status(403).json({ message: 'Invalid special key' })
-    }
-
-
-    try {
-        const duplicate = await User.findOne({ email }).lean().exec()
-        if (duplicate) {
-            return res.status(409).json({ message: 'Email already exists' })
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10)
-        const newAdmin = await User.create({
-            email,
-            password: hashedPassword,
-            phoneNumber,
-            balance: 1000,
-            isVerified: true,
-            role: 'admin'
-        })
-
-        /*
-        // TODO: should i send a vertification code to an admin or should be immediatly verified?
-        await sendVerificationCode(email, verificationCode)
-        */
-
-        res.status(201).json({ message: `Admin user ${email} created successfully` })
-    } catch (error) {
-        res.status(500).json({ message: error.message })
-    }
-}
-
-
-
-
 const login = async (req, res) => {
     try {
         const { email, password } = req.body
@@ -190,13 +127,12 @@ const login = async (req, res) => {
         )
 
         res.cookie('jwt', accessToken, {
-            httpOnly: true, //accessible only by web server / and not by the cliet side/javascript
-            secure: true, //https
+            httpOnly: true, //  disable using the cookie from the javascript in the browser.
+            secure: true, // true means the cookie will only be sent over HTTPS connections
             sameSite: 'None', //cross-site cookie 
-            maxAge: 7 * 24 * 60 * 60 * 1000 //cookie expiry: 7d. set to match the access token
+            maxAge: 7 * 24 * 60 * 60 * 1000
         })
 
-        // Send accessToken 
         res.json({ accessToken })
     } catch (error) {
         console.error(error)
@@ -221,6 +157,5 @@ module.exports = {
     signup,
     login,
     logout,
-    signupAdmin,
     verifyEmail
 }

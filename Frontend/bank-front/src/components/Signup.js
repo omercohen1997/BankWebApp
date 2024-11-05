@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, TextField, Button, Typography, CircularProgress, Alert } from '@mui/material';
+import { Box, TextField, Button, Typography, CircularProgress, Alert, IconButton, InputAdornment } from '@mui/material';
 import axios from '../api/axios'
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
 const EMAIL_REGEX = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{6,20}$/;
@@ -9,7 +11,7 @@ const PHONE_NUMBER_REGEX = /^05\d(-\d{7}|\d{7})$/;
 
 const Signup = () => {
   const emailRef = useRef();
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const [email, setEmail] = useState('');
   const [validEmail, setValidEmail] = useState(false);
@@ -18,10 +20,13 @@ const Signup = () => {
   const [password, setPassword] = useState('');
   const [validPassword, setValidPassword] = useState(false);
   const [passwordFocus, setPasswordFocus] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
 
   const [confirmPassword, setConfirmPassword] = useState('');
   const [validConfirmPassword, setValidConfirmPassword] = useState(false);
   const [confirmPasswordFocus, setConfirmPasswordFocus] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
 
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -56,6 +61,12 @@ const Signup = () => {
     setValidPhoneNumber(PHONE_NUMBER_REGEX.test(phoneNumber));
   }, [phoneNumber])
 
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+  const handleClickShowConfirmPassword= () => setShowConfirmPassword((show) => !show);
+
+  const handleMouseDownPassword = (event) => event.preventDefault();
+  const handleMouseUpPassword = (event) => event.preventDefault();
 
 
   const handleSubmit = async (e) => {
@@ -117,6 +128,7 @@ const Signup = () => {
       setMessage('Email verified successfully!');
       setVerificationCode('');
       //TODO:: add the history think (from, { replace: true } ) like in login
+      alert('Email verified successfully!, you can login now');
       navigate('/login');
     } catch (error) {
       setMessage(error.response?.data?.message || 'An error occurred');
@@ -168,7 +180,7 @@ const Signup = () => {
             label="Password"
             variant="outlined"
             fullWidth
-            type="password"
+            type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             onFocus={() => setPasswordFocus(false)}
@@ -180,12 +192,28 @@ const Signup = () => {
             }
             required
             margin="normal"
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label={showPassword ? 'hide the password' : 'display the password'}
+                    onClick={handleClickShowPassword}
+                    onMouseDown={handleMouseDownPassword}
+                    onMouseUp={handleMouseUpPassword}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
+
           <TextField
             label="Confirm Password"
             variant="outlined"
             fullWidth
-            type="password"
+            type={showConfirmPassword ? 'text' : 'password'}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             onFocus={() => setConfirmPasswordFocus(false)}
@@ -195,7 +223,23 @@ const Signup = () => {
               'Passwords must match.'}
             required
             margin="normal"
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label={showConfirmPassword ? 'hide the password' : 'display the password'}
+                    onClick={handleClickShowConfirmPassword}
+                    onMouseDown={handleMouseDownPassword}
+                    onMouseUp={handleMouseUpPassword}
+                    edge="end"
+                  >
+                    {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
+
           <TextField
             label="Phone Number"
             variant="outlined"

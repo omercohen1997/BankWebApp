@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   Container,
   Paper,
@@ -18,11 +18,14 @@ import {
   AccountBalance,
   Send as SendIcon,
   ArrowUpward,
-  ArrowDownward
+  ArrowDownward,
 } from '@mui/icons-material';
+
 import axios from '../api/axios';
+import { authContext } from '../context/AuthProvider';
 
 const Dashboard = () => {
+  const { auth } = useContext(authContext);
   const [balance, setBalance] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [receiverEmail, setReceiverEmail] = useState('');
@@ -50,7 +53,10 @@ const Dashboard = () => {
   const fetchTransactions = async () => {
     try {
       const response = await axios.get('/transactions');
-      setTransactions(response.data.transactions);
+      const sortedTransactions = response.data.transactions.sort((a,b) => {
+        return new Date(b.createdAt) - new Date(a.createdAt)
+      });
+      setTransactions(sortedTransactions);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch transactions');
       console.error('Transactions fetch error:', err);
@@ -64,7 +70,7 @@ const Dashboard = () => {
     setSendingMoney(true);
 
     try {
-      const response = await axios.post('/transactions/send', {
+      await axios.post('/transactions/send', {
         receiverEmail,
         amount: parseFloat(amount)
       });
@@ -79,6 +85,39 @@ const Dashboard = () => {
     } finally {
       setSendingMoney(false);
     }
+  };
+
+  const TransactionItem = ({ transaction }) => {
+    const isReceiver = transaction.receiverEmail === auth.email;
+    
+    return (
+      <ListItem sx={{ px: 0 }}>
+        <ListItemText
+          primary={
+            <Typography variant="body1" sx={{ color: isReceiver ? 'success.main' : 'error.main' }}>
+              {isReceiver 
+                ? `From: ${transaction.senderEmail}`
+                : `To: ${transaction.receiverEmail}`}
+            </Typography>
+          }
+          secondary={new Date(transaction.createdAt).toLocaleDateString()}
+        />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {isReceiver ? (
+            <ArrowUpward color="success" />
+          ) : (
+            <ArrowDownward color="error" />
+          )}
+          <Typography
+            variant="body1"
+            color={isReceiver ? 'success.main' : 'error.main'}
+            sx={{ fontWeight: 'medium' }}
+          >
+            {isReceiver ? '+' : '-'}${transaction.amount.toFixed(2)}
+          </Typography>
+        </Box>
+      </ListItem>
+    );
   };
 
   if (loading) {
@@ -135,7 +174,6 @@ const Dashboard = () => {
               <TextField
                 fullWidth
                 label="Amount"
-                type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 required
@@ -177,26 +215,7 @@ const Dashboard = () => {
               {transactions.length > 0 ? (
                 transactions.map((transaction) => (
                   <React.Fragment key={transaction._id}>
-                    <ListItem sx={{ px: 0 }}>
-                      <ListItemText
-                        primary={
-                          <Typography variant="body1">
-                            {`To: ${transaction.receiverEmail}`}
-                          </Typography>
-                        }
-                        secondary={new Date(transaction.createdAt).toLocaleDateString()}
-                      />
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <ArrowUpward color="error" />
-                        <Typography
-                          variant="body1"
-                          color="error"
-                          sx={{ fontWeight: 'medium' }}
-                        >
-                          -${transaction.amount.toFixed(2)}
-                        </Typography>
-                      </Box>
-                    </ListItem>
+                    <TransactionItem transaction={transaction} />
                     <Divider />
                   </React.Fragment>
                 ))

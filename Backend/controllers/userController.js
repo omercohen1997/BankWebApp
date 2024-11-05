@@ -1,9 +1,9 @@
 const User = require('../models/User')
 const bcrypt = require('bcrypt')
+const { phoneNumberRegex, emailRegex } = require('../utils/validatePatterns')
 
 
 
-// Get the balance of the logged-in user
 const getBalance = async (req, res) => {
     const user = req.user
 
@@ -11,13 +11,6 @@ const getBalance = async (req, res) => {
         if (!user) {
             return res.status(401).json({ message: 'Unauthorized' })
         }
-
-        /*   // Find the user by ID
-          const user = await User.findById(userId).exec()
-  
-          if (!user) {
-              return res.status(404).json({ message: 'User not found' })
-          } */
 
         res.status(200).json({ email: user.email, balance: user.balance })
     } catch (error) {
@@ -83,9 +76,47 @@ const deleteUser = async (req, res) => {
     }
 }
 
+const createAdmin = async (req, res) => {
+    const { email, password, phoneNumber } = req.body;
+
+    if (!email || !password || !phoneNumber) {
+        return res.json(400).json({ error: 'All fields are required' })
+    }
+
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: 'Invalid email format' })
+    }
+
+    if (!phoneNumberRegex.test(phoneNumber)) {
+        return res.status(400).json({ message: 'Invalid phone number format' })
+    }
+
+    try {
+
+        const adminDuplicate = await User.findOne({ email })
+
+        if (adminDuplicate) {
+            return res.status(409).json({ message: 'email already exists the email should be unique' })
+        }
+        const hashedPassword = await bcrypt.hash(password, 10)
+        await User.create({
+            email,
+            password: hashedPassword,
+            phoneNumber,
+            role: 'admin'
+        })
+        return res.status(201).json({ message: `Admin ${email} created successfully` })
+
+    } catch (error) {
+        return res.status(500).json({ message: error.message })
+    }
+
+}
+
 module.exports = {
     getBalance,
     changePassword,
     getAllUsers,
-    deleteUser
+    deleteUser,
+    createAdmin
 }

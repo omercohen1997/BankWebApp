@@ -15,11 +15,13 @@ const sendMoney = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: 'Receiver email needs to be different from the sender email' })
     }
     
-    if (isNaN(amount)){
+    const amountParse = parseFloat(amount);
+
+    if (isNaN(amountParse)){
         return res.status(400).json({message: 'The amount field must be a number'})
     }
 
-    if (amount <= 0) {
+    if (amountParse <= 0) {
         return res.status(400).json({ message: 'Amount must be greater than zero' })
     }
 
@@ -33,12 +35,12 @@ const sendMoney = asyncHandler(async (req, res) => {
                 throw new Error('Receiver email does not exist')
             }
 
-            if (sender.balance < amount) {
+            if (sender.balance < amountParse) {
                 throw new Error('You dont have enough money to make the transaction')
             }
 
-            sender.balance -= amount
-            receiver.balance += amount
+            sender.balance -= amountParse
+            receiver.balance += amountParse
 
             await Promise.all([
                 sender.save({ session }),
@@ -48,7 +50,7 @@ const sendMoney = asyncHandler(async (req, res) => {
                 new Transaction({
                     senderEmail: sender.email,
                     receiverEmail,
-                    amount: amount,
+                    amount: amountParse,
                 }).save({ session })
             ])
         })
