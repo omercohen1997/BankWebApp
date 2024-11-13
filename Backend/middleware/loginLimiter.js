@@ -4,7 +4,7 @@ const { logEvents } = require('./logger')
 
 // In short every time a client sends a request (e.g., to the login route), express-rate-limit checks the client's IP (req.ip).
 const loginLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute
+    windowMs: 60 * 1000, 
     max: 5, 
     message:
         { message: 'Too many login attempts , please try again after a 60 second pause' },

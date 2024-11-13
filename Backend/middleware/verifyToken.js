@@ -1,7 +1,4 @@
-/*
-    This middleware will verify a valid token
-     everytime we make a request to a protected endpoint.
-*/
+
 const jwt = require('jsonwebtoken')
 const User = require('../models/User')
 

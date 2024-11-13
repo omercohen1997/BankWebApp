@@ -53,12 +53,12 @@ const Dashboard = () => {
   const fetchTransactions = async () => {
     try {
       const response = await axios.get('/transactions');
-      const sortedTransactions = response.data.transactions.sort((a,b) => {
+      const sortedTransactions = response.data.transactions.sort((a, b) => {
         return new Date(b.createdAt) - new Date(a.createdAt)
       });
       setTransactions(sortedTransactions);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch transactions');
+      //setError(err.response?.data?.message || 'Failed to fetch transactions');
       console.error('Transactions fetch error:', err);
     }
   };
@@ -69,12 +69,13 @@ const Dashboard = () => {
     setSuccess('');
     setSendingMoney(true);
 
+
     try {
       await axios.post('/transactions/send', {
         receiverEmail,
         amount: parseFloat(amount)
       });
-      
+
       setSuccess('Transaction completed successfully');
       setReceiverEmail('');
       setAmount('');
@@ -89,13 +90,13 @@ const Dashboard = () => {
 
   const TransactionItem = ({ transaction }) => {
     const isReceiver = transaction.receiverEmail === auth.email;
-    
+
     return (
       <ListItem sx={{ px: 0 }}>
         <ListItemText
           primary={
             <Typography variant="body1" sx={{ color: isReceiver ? 'success.main' : 'error.main' }}>
-              {isReceiver 
+              {isReceiver
                 ? `From: ${transaction.senderEmail}`
                 : `To: ${transaction.receiverEmail}`}
             </Typography>
@@ -224,7 +225,7 @@ const Dashboard = () => {
                   <ListItemText
                     primary={
                       <Typography variant="body1" color="text.secondary" align="center">
-                        No transactions found
+                        No transactions
                       </Typography>
                     }
                   />

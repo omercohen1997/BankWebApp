@@ -22,15 +22,16 @@ const changePassword = async (req, res) => {
     const user = req.user
     const { oldPassword, newPassword } = req.body
 
+    if (!user) {
+        return res.status(401).json({ message: 'Unauthorized' })
+    }
+
+
+    if (!oldPassword || !newPassword) {
+        return res.status(400).json({ message: 'Both old and new passwords are required' })
+    }
+
     try {
-        if (!user) {
-            return res.status(401).json({ message: 'Unauthorized' })
-        }
-
-
-        if (!oldPassword || !newPassword) {
-            return res.status(400).json({ message: 'Both old and new passwords are required' })
-        }
 
 
         const isMatch = await bcrypt.compare(oldPassword, user.password)
@@ -53,12 +54,12 @@ const changePassword = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
     try {
-        const users = await User.find().select('-password')
-        res.status(200).json(users)
+        const users = await User.find({ role: 'user' }).select('-password');
+        res.status(200).json(users);
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching users', error })
+        res.status(500).json({ message: 'Error fetching users', error });
     }
-}
+};
 
 
 
@@ -77,7 +78,7 @@ const deleteUser = async (req, res) => {
 }
 
 const createAdmin = async (req, res) => {
-    const { email, password, phoneNumber } = req.body;
+    const { email, password, phoneNumber } = req.body
 
     if (!email || !password || !phoneNumber) {
         return res.json(400).json({ error: 'All fields are required' })
@@ -103,7 +104,9 @@ const createAdmin = async (req, res) => {
             email,
             password: hashedPassword,
             phoneNumber,
+            isVerified: true,
             role: 'admin'
+            
         })
         return res.status(201).json({ message: `Admin ${email} created successfully` })
 
@@ -113,10 +116,34 @@ const createAdmin = async (req, res) => {
 
 }
 
+const getUser = async (req, res) => {
+    const { id } = req.params
+
+    try {
+        const user = await User.findById(id)
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' })
+        }
+
+        res.status(200).json({
+            email: user.email,
+            balance: user.balance,
+            role: user.role
+            // add any other relevant fields
+        })
+    } catch (error) {
+        console.error('Error fetching user by ID:', error)
+        res.status(500).json({ message: 'Server error' })
+    }
+}
+
+
 module.exports = {
     getBalance,
     changePassword,
     getAllUsers,
     deleteUser,
-    createAdmin
+    createAdmin,
+    getUser
 }

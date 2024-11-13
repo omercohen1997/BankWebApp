@@ -104,7 +104,7 @@ const Login = () => {
                         value={email}
                         inputRef={emailRef}
                         onChange={(e) => setEmail(e.target.value)}
-                        autoComplete="off"
+                        autoComplete="on"
                         required
                     />
                     <TextField
