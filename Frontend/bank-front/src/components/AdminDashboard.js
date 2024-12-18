@@ -34,8 +34,7 @@ const AdminDashboard = () => {
   const [error, setError] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  
-  // New state for transactions
+
   const [selectedUser, setSelectedUser] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [transactionLoading, setTransactionLoading] = useState(false);
@@ -74,7 +73,6 @@ const AdminDashboard = () => {
     setPage(0);
   };
 
-  // Updated function to fetch user transactions
   const fetchUserTransactions = async (user) => {
     setTransactionLoading(true);
     setTransactionError('');
@@ -83,7 +81,6 @@ const AdminDashboard = () => {
       setTransactions(response.data.transactions || []);
     } catch (err) {
       if (err.response?.status === 404) {
-        // Handle the "No transactions found" case
         setTransactions([]);
       } else {
         setTransactionError('Failed to fetch transactions. ' + (err.response?.data?.message || ''));
@@ -93,13 +90,11 @@ const AdminDashboard = () => {
     }
   };
 
-  // Handle opening transaction dialog
   const handleOpenTransactions = (user) => {
     setSelectedUser(user);
     fetchUserTransactions(user);
   };
 
-  // Handle closing transaction dialog
   const handleCloseTransactions = () => {
     setSelectedUser(null);
     setTransactions([]);
@@ -204,6 +199,7 @@ const AdminDashboard = () => {
         </TableContainer>
       </Paper>
 
+
       {/* Transactions Dialog */}
       <Dialog
         open={Boolean(selectedUser)}
@@ -234,7 +230,6 @@ const AdminDashboard = () => {
                 <TableHead>
                   <TableRow>
                     <TableCell>Date</TableCell>
-                    <TableCell>Type</TableCell>
                     <TableCell>Amount</TableCell>
                     <TableCell>Sender</TableCell>
                     <TableCell>Receiver</TableCell>
@@ -246,7 +241,6 @@ const AdminDashboard = () => {
                       <TableCell>
                         {new Date(transaction.createdAt).toLocaleDateString()}
                       </TableCell>
-                      <TableCell>{transaction.type}</TableCell>
                       <TableCell>
                         ${transaction.amount?.toFixed(2) || '0.00'}
                       </TableCell>

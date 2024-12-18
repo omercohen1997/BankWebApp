@@ -32,7 +32,7 @@ const HomePage = () => {
                 sx={{
                     backgroundColor: 'primary.main',
                     color: 'white',
-                    py: 10,
+                    py: 8,
                     textAlign: 'center'
                 }}
             >

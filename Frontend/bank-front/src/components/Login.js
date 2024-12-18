@@ -51,7 +51,7 @@ const Login = () => {
             if (from !== '/') {
                 navigate(from, { replace: true });
             } else {
-                role === 'admin' ? navigate('/admin', { replace: true }) : navigate('/dashboard', { replace: true });
+                role === 'admin' ? navigate('/admin-dashboard', { replace: true }) : navigate('/dashboard', { replace: true });
             }
         } catch (err) {
             if (!err?.response) {

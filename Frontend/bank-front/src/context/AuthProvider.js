@@ -4,7 +4,6 @@ export const authContext = createContext({});
 
 export const AuthProvider = ({ children }) => {
     const [auth, setAuth] = useState(() => {
-        /* another way to initilize auth variable */
         const storedAuth = sessionStorage.getItem('auth');
         return storedAuth ? JSON.parse(storedAuth) : {};
     });
