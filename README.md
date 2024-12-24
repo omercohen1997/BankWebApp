@@ -39,7 +39,7 @@ BankWebApp/
   
 * Money Transactions: Users can send money to other registered users with ACID-compliant operations for reliable transactions.
   
-# Prerequisites
+## Prerequisites
 Before running the application, ensure you have the following installed:
 Node.js 
 MongoDB
