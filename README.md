@@ -6,7 +6,7 @@ OC Bank is a secure role-based access banking application with functionalities l
 * FrontEnd: React.js, Axios
 
 ## Project Structure
-
+```bash
 BankWebApp/
     ├── Backend/                # Backend server-side code
     │   ├── controllers/        # Handling the logic for different routes
@@ -28,4 +28,6 @@ BankWebApp/
     │   │   ├── App/            # Sets up routes and handles navigation
     │   │   └── index.js        # Main React app component
     │
-    └── README.md              
+    └── README.md
+```
+         
