@@ -102,7 +102,7 @@ EMAIL_USER=<your_email_address>
 EMAIL_PASSWORD=<your_email_password>
  ```
 
-# API Endpoints
+## API Endpoints
 ### Authentication Routes
 * POST /auth/login: Log in a user.
 * POST /auth/register: Register a new user.
